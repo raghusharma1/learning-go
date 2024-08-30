@@ -2,7 +2,7 @@ package main
 
 import "fmt"
 
-func main() {
+func pyramid() {
 	var rows int
 	var k int = 0
 	fmt.Print("Enter number of rows :")
