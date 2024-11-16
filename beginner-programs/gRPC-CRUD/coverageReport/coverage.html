@@ -1,0 +1,445 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>client: Go Coverage Report</title>
+		<style>
+			body {
+				background: black;
+				color: rgb(80, 80, 80);
+			}
+			body, pre, #legend span {
+				font-family: Menlo, monospace;
+				font-weight: bold;
+			}
+			#topbar {
+				background: black;
+				position: fixed;
+				top: 0; left: 0; right: 0;
+				height: 42px;
+				border-bottom: 1px solid rgb(80, 80, 80);
+			}
+			#content {
+				margin-top: 50px;
+			}
+			#nav, #legend {
+				float: left;
+				margin-left: 10px;
+			}
+			#legend {
+				margin-top: 12px;
+			}
+			#nav {
+				margin-top: 10px;
+			}
+			#legend span {
+				margin: 0 5px;
+			}
+			.cov0 { color: rgb(192, 0, 0) }
+.cov1 { color: rgb(128, 128, 128) }
+.cov2 { color: rgb(116, 140, 131) }
+.cov3 { color: rgb(104, 152, 134) }
+.cov4 { color: rgb(92, 164, 137) }
+.cov5 { color: rgb(80, 176, 140) }
+.cov6 { color: rgb(68, 188, 143) }
+.cov7 { color: rgb(56, 200, 146) }
+.cov8 { color: rgb(44, 212, 149) }
+.cov9 { color: rgb(32, 224, 152) }
+.cov10 { color: rgb(20, 236, 155) }
+
+		</style>
+	</head>
+	<body>
+		<div id="topbar">
+			<div id="nav">
+				<select id="files">
+				
+				<option value="file0">github.com/tannergabriel/learning-go/beginner-programs/gRPC-CRUD/client/client.go (0.0%)</option>
+				
+				<option value="file1">github.com/tannergabriel/learning-go/beginner-programs/gRPC-CRUD/client/cmd/create.go (44.4%)</option>
+				
+				<option value="file2">github.com/tannergabriel/learning-go/beginner-programs/gRPC-CRUD/client/cmd/delete.go (30.8%)</option>
+				
+				<option value="file3">github.com/tannergabriel/learning-go/beginner-programs/gRPC-CRUD/client/cmd/read.go (30.8%)</option>
+				
+				<option value="file4">github.com/tannergabriel/learning-go/beginner-programs/gRPC-CRUD/client/cmd/root.go (77.3%)</option>
+				
+				<option value="file5">github.com/tannergabriel/learning-go/beginner-programs/gRPC-CRUD/client/cmd/update.go (50.0%)</option>
+				
+				</select>
+			</div>
+			<div id="legend">
+				<span>not tracked</span>
+			
+				<span class="cov0">not covered</span>
+				<span class="cov8">covered</span>
+			
+			</div>
+		</div>
+		<div id="content">
+		
+		<pre class="file" id="file0" style="display: none">package main
+
+import (
+        "github.com/tannergabriel/learning-go/beginner-programs/gRPC-CRUD/client/cmd"
+)
+
+func main() <span class="cov0" title="0">{
+        cmd.Execute()
+}</span>
+</pre>
+		
+		<pre class="file" id="file1" style="display: none">package cmd
+
+import (
+        "context"
+        "fmt"
+
+        "github.com/spf13/cobra"
+        "github.com/tannergabriel/learning-go/beginner-programs/gRPC-CRUD/pb"
+        "google.golang.org/grpc"
+)
+
+type createBlogCmdParams struct {
+        ID       *string
+        Title    *string
+        AuthorID *string
+        Content  *string
+}
+
+var createBlogParams *createBlogCmdParams
+
+func init() <span class="cov8" title="1">{
+        createBlogParams = &amp;createBlogCmdParams{}
+
+        createBlogParams.Title = createCmd.Flags().StringP("title", "t", "", "Title of the blog post")
+        createCmd.MarkFlagRequired("title")
+
+        createBlogParams.AuthorID = createCmd.Flags().StringP("authorid", "i", "", "Id of the blog post author")
+        createCmd.MarkFlagRequired("authorid")
+
+        createBlogParams.Content = createCmd.Flags().StringP("content", "c", "", "Blog post content")
+        createCmd.MarkFlagRequired("content")
+
+        rootCmd.AddCommand(createCmd)
+}</span>
+
+var createCmd = &amp;cobra.Command{
+        Use:   "create",
+        Short: "Creating a new Blog post in the database",
+        Long:  `Creating a new Blog post in the database`,
+        Run: func(cmd *cobra.Command, args []string) <span class="cov0" title="0">{
+                s, err := grpc.Dial("localhost:50051", grpc.WithInsecure())
+
+                if err != nil </span><span class="cov0" title="0">{
+                        panic(err)</span>
+                }
+
+                <span class="cov0" title="0">defer s.Close()
+
+                c := pb.NewBlogServiceClient(s)
+
+                request := &amp;pb.Blog{
+                        AuthorId: *createBlogParams.AuthorID,
+                        Title:    *createBlogParams.Title,
+                        Content:  *createBlogParams.Content,
+                }
+
+                createdBlog, err := c.CreateBlog(context.Background(), &amp;pb.CreateBlogRequest{
+                        Blog: request,
+                })
+
+                if err != nil </span><span class="cov0" title="0">{
+                        panic(err)</span>
+                }
+
+                <span class="cov0" title="0">fmt.Printf("Blog has been created: %v", createdBlog.Blog)</span>
+        },
+}
+</pre>
+		
+		<pre class="file" id="file2" style="display: none">package cmd
+
+import (
+        "context"
+        "fmt"
+        "log"
+
+        "github.com/spf13/cobra"
+        "github.com/tannergabriel/learning-go/beginner-programs/gRPC-CRUD/pb"
+        "google.golang.org/grpc"
+)
+
+type deleteBlogCmdParams struct {
+        BlogID *string
+}
+
+var deleteBlogParams *deleteBlogCmdParams
+
+func init() <span class="cov8" title="1">{
+        deleteBlogParams = &amp;deleteBlogCmdParams{}
+
+        deleteBlogParams.BlogID = deleteCmd.Flags().StringP("blogid", "r", "", "Id of the blog post you want to read")
+        deleteCmd.MarkFlagRequired("blogid")
+
+        rootCmd.AddCommand(deleteCmd)
+}</span>
+
+var deleteCmd = &amp;cobra.Command{
+        Use:   "delete",
+        Short: "Delete a blog post from the database",
+        Long:  `Delete a blog post from the database`,
+        Run: func(cmd *cobra.Command, args []string) <span class="cov0" title="0">{
+                s, err := grpc.Dial("localhost:50051", grpc.WithInsecure())
+
+                if err != nil </span><span class="cov0" title="0">{
+                        panic(err)</span>
+                }
+
+                <span class="cov0" title="0">defer s.Close()
+
+                c := pb.NewBlogServiceClient(s)
+
+                deleteResponse, err := c.DeleteBlog(context.Background(), &amp;pb.DeleteBlogRequest{
+                        BlogId: *deleteBlogParams.BlogID,
+                })
+
+                if err != nil </span><span class="cov0" title="0">{
+                        log.Fatalf("something went wrong: %v", err)
+                }</span>
+
+                <span class="cov0" title="0">fmt.Println(deleteResponse.Status)</span>
+        },
+}
+</pre>
+		
+		<pre class="file" id="file3" style="display: none">package cmd
+
+import (
+        "context"
+        "fmt"
+        "log"
+
+        "github.com/spf13/cobra"
+        "github.com/tannergabriel/learning-go/beginner-programs/gRPC-CRUD/pb"
+        "google.golang.org/grpc"
+)
+
+type readBlogCmdParams struct {
+        BlogID *string
+}
+
+var readBlogParams *readBlogCmdParams
+
+func init() <span class="cov8" title="1">{
+        readBlogParams = &amp;readBlogCmdParams{}
+
+        readBlogParams.BlogID = readCmd.Flags().StringP("blogid", "r", "", "Id of the blog post you want to read")
+        readCmd.MarkFlagRequired("blogid")
+
+        rootCmd.AddCommand(readCmd)
+}</span>
+
+var readCmd = &amp;cobra.Command{
+        Use:   "read",
+        Short: "Reading a blog post from the database",
+        Long:  `Reading a blog post from the database`,
+        Run: func(cmd *cobra.Command, args []string) <span class="cov0" title="0">{
+                s, err := grpc.Dial("localhost:50051", grpc.WithInsecure())
+
+                if err != nil </span><span class="cov0" title="0">{
+                        panic(err)</span>
+                }
+
+                <span class="cov0" title="0">defer s.Close()
+
+                c := pb.NewBlogServiceClient(s)
+
+                blog, err := c.ReadBlog(context.Background(), &amp;pb.ReadBlogRequest{
+                        BlogId: *readBlogParams.BlogID,
+                })
+
+                if err != nil </span><span class="cov0" title="0">{
+                        log.Fatalf("something went wrong: %v", err)
+                }</span>
+
+                <span class="cov0" title="0">fmt.Println(blog.Blog)</span>
+        },
+}
+</pre>
+		
+		<pre class="file" id="file4" style="display: none">package cmd
+
+import (
+        "fmt"
+        "os"
+
+        homedir "github.com/mitchellh/go-homedir"
+        "github.com/spf13/cobra"
+        "github.com/spf13/viper"
+)
+
+var (
+        // Used for flags.
+        cfgFile     string
+        userLicense string
+
+        rootCmd = &amp;cobra.Command{
+                Use:   "grpc-crud",
+                Short: "A command line application for manipulation a MongoDB Database using GRPC",
+                Long:  `A command line application for manipulation a MongoDB Database using GRPC`,
+        }
+)
+
+// Execute executes the root command.
+func Execute() error <span class="cov8" title="1">{
+        return rootCmd.Execute()
+}</span>
+
+func init() <span class="cov8" title="1">{
+        cobra.OnInitialize(initConfig)
+
+        rootCmd.PersistentFlags().StringVar(&amp;cfgFile, "config", "", "config file (default is $HOME/.cobra.yaml)")
+        rootCmd.PersistentFlags().StringP("author", "a", "Gabriel Tanner", "author name for copyright attribution")
+        rootCmd.PersistentFlags().StringVarP(&amp;userLicense, "license", "l", "", "name of license for the project")
+        rootCmd.PersistentFlags().Bool("viper", true, "use Viper for configuration")
+        viper.BindPFlag("author", rootCmd.PersistentFlags().Lookup("author"))
+        viper.BindPFlag("useViper", rootCmd.PersistentFlags().Lookup("viper"))
+        viper.SetDefault("author", "NAME HERE &lt;EMAIL ADDRESS&gt;")
+        viper.SetDefault("license", "apache")
+}</span>
+
+func er(msg interface{}) <span class="cov0" title="0">{
+        fmt.Println("Error:", msg)
+        os.Exit(1)
+}</span>
+
+func initConfig() <span class="cov8" title="1">{
+        if cfgFile != "" </span><span class="cov0" title="0">{
+                // Use config file from the flag.
+                viper.SetConfigFile(cfgFile)
+        }</span> else<span class="cov8" title="1"> {
+                // Find home directory.
+                home, err := homedir.Dir()
+                if err != nil </span><span class="cov0" title="0">{
+                        er(err)
+                }</span>
+
+                // Search config in home directory with name ".cobra" (without extension).
+                <span class="cov8" title="1">viper.AddConfigPath(home)
+                viper.SetConfigName(".cobra")</span>
+        }
+
+        <span class="cov8" title="1">viper.AutomaticEnv()
+
+        if err := viper.ReadInConfig(); err == nil </span><span class="cov0" title="0">{
+                fmt.Println("Using config file:", viper.ConfigFileUsed())
+        }</span>
+}
+</pre>
+		
+		<pre class="file" id="file5" style="display: none">package cmd
+
+import (
+        "context"
+        "fmt"
+        "log"
+
+        "github.com/spf13/cobra"
+        "github.com/tannergabriel/learning-go/beginner-programs/gRPC-CRUD/pb"
+        "google.golang.org/grpc"
+)
+
+type updateBlogCmdParams struct {
+        BlogID   *string
+        Title    *string
+        AuthorID *string
+        Content  *string
+}
+
+var updateBlogParams *updateBlogCmdParams
+
+func init() <span class="cov8" title="1">{
+        updateBlogParams = &amp;updateBlogCmdParams{}
+
+        updateBlogParams.BlogID = updateCmd.Flags().StringP("id", "", "", "Blog post id")
+        updateCmd.MarkFlagRequired("id")
+
+        updateBlogParams.Title = updateCmd.Flags().StringP("title", "t", "", "Title of the blog post")
+        updateCmd.MarkFlagRequired("title")
+
+        updateBlogParams.AuthorID = updateCmd.Flags().StringP("authorid", "i", "", "Id of the blog post author")
+        updateCmd.MarkFlagRequired("authorid")
+
+        updateBlogParams.Content = updateCmd.Flags().StringP("content", "c", "", "Blog post content")
+        updateCmd.MarkFlagRequired("content")
+
+        rootCmd.AddCommand(updateCmd)
+}</span>
+
+var updateCmd = &amp;cobra.Command{
+        Use:   "update",
+        Short: "Update an already existing Blog post in the database",
+        Long:  `Update an already existing Blog post in the database`,
+        Run: func(cmd *cobra.Command, args []string) <span class="cov0" title="0">{
+                s, err := grpc.Dial("localhost:50051", grpc.WithInsecure())
+
+                if err != nil </span><span class="cov0" title="0">{
+                        panic(err)</span>
+                }
+
+                <span class="cov0" title="0">defer s.Close()
+
+                c := pb.NewBlogServiceClient(s)
+
+                updateRequest := &amp;pb.UpdateBlogRequest{
+                        BlogId: *updateBlogParams.BlogID,
+                        Blog: &amp;pb.Blog{
+                                AuthorId: *updateBlogParams.AuthorID,
+                                Title:    *updateBlogParams.Title,
+                                Content:  *updateBlogParams.Content,
+                        },
+                }
+
+                updatedBlog, err := c.UpdateBlog(context.Background(), updateRequest)
+
+                if err != nil </span><span class="cov0" title="0">{
+                        log.Fatalf("something went wrong: %v", err)
+                }</span>
+
+                <span class="cov0" title="0">fmt.Println(updatedBlog.Blog)</span>
+        },
+}
+</pre>
+		
+		</div>
+	</body>
+	<script>
+	(function() {
+		var files = document.getElementById('files');
+		var visible;
+		files.addEventListener('change', onChange, false);
+		function select(part) {
+			if (visible)
+				visible.style.display = 'none';
+			visible = document.getElementById(part);
+			if (!visible)
+				return;
+			files.value = part;
+			visible.style.display = 'block';
+			location.hash = part;
+		}
+		function onChange() {
+			select(files.value);
+			window.scrollTo(0, 0);
+		}
+		if (location.hash != "") {
+			select(location.hash.substr(1));
+		}
+		if (!visible) {
+			select("file0");
+		}
+	})();
+	</script>
+</html>
